@@ -8,19 +8,8 @@ import {
 } from "react-native";
 import styles from "./styles";
 
-import SQLite from "react-native-sqlite-2";
-const db = SQLite.openDatabase("test.db", "1.0", "", 1);
 
-db.transaction(function(txn) {
-  // txn.executeSql("DROP TABLE IF EXISTS users");
-  txn.executeSql(
-    "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)"
-  );
-});
-
-// type Props = {};
 class App extends Component {
-  //<Props> {
   static navigationOptions = {
     header: false
   };
@@ -31,23 +20,23 @@ class App extends Component {
     };
   }
 
-  onLogDataPress() {
-    db.transaction(function(txn) {
-      txn.executeSql("SELECT * FROM users", [], function(tx, res) {
-        for (let i = 0; i < res.rows.length; ++i) {
-          console.log("item:", res.rows.item(i));
+  getData = () => {
+    fetch('http://localhost:3000/data/getData?data=' + this.state.value, { method: 'GET' })
+      .then(res => res.json())
+      .then(
+        (result) => {
+          if (result.success === false) {
+            alert("too small mess");
+            return;
+          }
+          console.log("result", result);
+        },
+        (error) => {
+          console.log("error", error);
         }
-      });
-    });
+      )
   }
 
-  onEnterDataPress() {
-    db.transaction(txn => {
-      txn.executeSql("INSERT INTO users (name) VALUES (?)", [this.state.value]);
-      // txn.executeSql("INSERT INTO users (name) VALUES (:name)", ["takuya"]);
-    });
-    // this.setState({ value: "" });
-  }
 
   render() {
     return (
@@ -61,19 +50,11 @@ class App extends Component {
           autoCorrect={false}
         />
         <TouchableOpacity
-          onPress={() => this.onEnterDataPress()}
+          onPress={this.getData}
           style={styles.saveButton}
         >
-          <Text style={styles.saveButtonText}>SAVE IN DB</Text>
+          <Text style={styles.saveButtonText}>GET DATA</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => this.onLogDataPress()}
-          style={styles.saveButton}
-        >
-          <Text style={styles.saveButtonText}>LOG DATA</Text>
-        </TouchableOpacity>
-        {/* <Text style={styles.welcome}>React Native!{"\n"}Database Learn</Text> */}
       </View>
     );
   }
